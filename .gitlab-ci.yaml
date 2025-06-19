@@ -1,0 +1,25 @@
+stages:
+  - build
+  - deploy
+
+variables:
+  PROJECT_ID: your_project_id
+  IMAGE_NAME: $CI_REGISTRY_IMAGE/data-api-service
+
+build:
+  stage: build
+  image: gcr.io/cloud-builders/docker
+  script:
+    - docker build -t $IMAGE_NAME .
+    - docker push $IMAGE_NAME
+
+deploy:
+  stage: deploy
+  image: google/cloud-sdk:alpine
+  script:
+    - gcloud run deploy data-api-service \
+        --image $IMAGE_NAME \
+        --region asia-southeast2 \
+        --platform managed \
+        --allow-unauthenticated \
+        --set-env-vars GCP_PROJECT_ID=$PROJECT_ID
